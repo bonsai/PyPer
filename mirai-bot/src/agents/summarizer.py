@@ -170,7 +170,7 @@ class PaperSummarizer:
                 # 記事IDを抽出
                 article_id = paper_url.split('/articles/')[-1]
                 # サムネイルURLの推測
-                thumbnail_url = f"https://media.springernature.com/full/springer-static/image/art%3A10.1038%2F {article_id}/MediaObjects/41586_{article_id}_Fig1_HTML.png"
+                thumbnail_url = f"https://media.springernature.com/full/springer-static/image/art%3A10.1038%2F{article_id}/MediaObjects/41586_{article_id}_Fig1_HTML.png"
                 
                 response = requests.get(thumbnail_url, timeout=10)
                 if response.status_code == 200:
