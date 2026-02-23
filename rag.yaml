@@ -1,0 +1,17 @@
+# SHIORI Intelligence Pipeline - Local Configuration
+global:
+  timezone: Asia/Tokyo
+  log_level: info
+  max_workers: 2
+
+plugins:
+  - module: Subscription::RSS
+    config:
+      url: https://www.nature.com/nature.rss
+      limit: 2
+      state_file: tests/rss_state.txt
+
+  # For loading test, we need at least one publisher
+  - module: Publish::BigQuery
+    config:
+      table_id: dummy_table

@@ -6,30 +6,64 @@ global:
   log_level: info
   bq_project_id: your-gcp-project-id
   bq_dataset: shiori_archive
+  max_workers: 4
 
 plugins:
   # ----------------------------------------------------------------
   # 1. SUBSCRIPTION: Where to get data from
   # ----------------------------------------------------------------
-  - module: Subscription::GoogleKeep
+
+  # RSS Subscription
+  - module: Subscription::RSS
     config:
-      # IMPORTANT: Change this path to your Google Keep Takeout directory.
-      path: /path/to/your/google-keep-takeout
+      urls:
+        - https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml
+        - https://www.nature.com/nature.rss
+      limit: 5
+      state_file: data/rss_state.txt
+
+  # Google Keep Subscription (Example)
+  #- module: Subscription::GoogleKeep
+  #  config:
+  #    path: /path/to/your/google-keep-takeout
 
   # ----------------------------------------------------------------
   # 2. FILTER: How to process the data
   # ----------------------------------------------------------------
+
+  # Gemini AI Enrichment
+  - module: Filter::LLM::MetadataEnricher
+    config:
+      api_key: YOUR_GEMINI_API_KEY
+      model: gemini-1.5-flash
+      # Optional: custom prompt
+      # prompt: "..."
+
+  # Vectorization (Mock or real)
   - module: Filter::LLM::Vectorize
     config:
-      # This will use a mock vector for now.
-      # In the future, it will use a real embedding model.
       model: text-embedding-004
 
   # ----------------------------------------------------------------
   # 3. PUBLISH: Where to send the data
   # ----------------------------------------------------------------
+
+  # Twitter/X Publishing
+  - module: Publish::Twitter
+    config:
+      consumer_key: YOUR_CONSUMER_KEY
+      consumer_secret: YOUR_CONSUMER_SECRET
+      access_token: YOUR_ACCESS_TOKEN
+      access_token_secret: YOUR_ACCESS_TOKEN_SECRET
+
+  # Hatena Blog Publishing
+  - module: Publish::Hatena
+    config:
+      hatena_id: YOUR_HATENA_ID
+      blog_id: YOUR_BLOG_ID.hatenablog.com
+      api_key: YOUR_HATENA_API_KEY
+
+  # BigQuery Publishing
   - module: Publish::BigQuery
     config:
-      # This will print to console for now.
-      # In the future, it will send data to this BigQuery table.
       table_id: entries_all

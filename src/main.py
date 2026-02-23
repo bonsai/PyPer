@@ -7,6 +7,7 @@ import os
 import re
 from itertools import chain, tee
 from typing import List, Dict, Any, Iterator
+import concurrent.futures
 
 # Add the 'src' directory to the Python path to allow sibling imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
@@ -15,7 +16,6 @@ from plugins.base import Entry, SubscriptionPlugin, FilterPlugin, PublishPlugin
 
 def to_snake_case(name: str) -> str:
     """Converts a CamelCase name to snake_case."""
-    # More specific regex to avoid adding underscore where not needed (e.g., after another underscore)
     name = re.sub('([a-zA-Z0-9])([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
 
@@ -27,17 +27,19 @@ def load_plugin(plugin_config: Dict[str, Any]):
 
     try:
         # Get the part of the name after the first '::' (e.g., "GoogleKeep", "LLM::Vectorize")
-        name_part = module_str.split("::", 1)[1]
+        parts = module_str.split("::")
+        if len(parts) < 2:
+            raise ValueError(f"Invalid module name format: {module_str}")
+
+        name_part = "::".join(parts[1:])
         # Handle names with multiple '::' like 'LLM::Vectorize'
         module_identifier = "_".join(name_part.split("::"))
         # Convert the identifier to snake_case for the filename (e.g., "llm_vectorize")
         module_filename = to_snake_case(module_identifier)
 
-        # This logic is based on the assumption that a plugin like 'Publish::BigQuery'
-        # will correspond to a file named 'plugins/big_query.py'.
-        # We will create/rename this file in a later step if needed.
-        if module_filename == "bigquery": # Handle this specific case for now
-            module_filename = "bigquery"
+        # Handle some special cases if necessary
+        if module_filename == "bigquery":
+            module_filename = "big_query"
 
         module_path = f"plugins.{module_filename}"
 
@@ -75,7 +77,7 @@ def run_pipeline(config_path: str):
         elif isinstance(instance, PublishPlugin): publishers.append(instance)
 
     # --- Execute the Pipeline ---
-    print("\\n--- Starting Pipeline Execution ---")
+    print("\n--- Starting Pipeline Execution ---")
 
     # 1. Chain all subscription plugin iterators
     entry_stream: Iterator[Entry] = chain(*(sub.execute() for sub in subscriptions))
@@ -90,20 +92,36 @@ def run_pipeline(config_path: str):
         for _ in entry_stream: pass # Consume the iterator
         return
 
+    # For "increasing workers", we use a ThreadPoolExecutor for publishers
+    max_workers = config.get("global", {}).get("max_workers", len(publishers))
+
+    print(f"Executing publishers with {max_workers} workers...")
+
     if len(publishers) == 1:
         publishers[0].execute(entry_stream)
     else:
         # If multiple publishers, tee the stream so each gets all entries
         publisher_streams = tee(entry_stream, len(publishers))
-        for i, publisher in enumerate(publishers):
-            print(f"Dispatching stream to publisher {i+1}/{len(publishers)} ({publisher.name})")
-            publisher.execute(publisher_streams[i])
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = []
+            for i, publisher in enumerate(publishers):
+                print(f"Scheduling publisher {i+1}/{len(publishers)} ({publisher.name})")
+                futures.append(executor.submit(publisher.execute, publisher_streams[i]))
+
+            # Wait for all to complete
+            concurrent.futures.wait(futures)
 
     print("--- Pipeline Execution Finished ---")
 
 def main():
     # Assume rag.yaml is in the parent directory of 'src'
-    config_path = os.path.join(os.path.dirname(__file__), '..', 'rag.yaml')
+    # Try rag.yaml first, then fall back to rag.yaml.example for demonstration
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    config_path = os.path.join(root_dir, 'rag.yaml')
+    if not os.path.exists(config_path):
+        config_path = os.path.join(root_dir, 'rag.yaml.example')
+        print(f"Warning: rag.yaml not found. Using {config_path} as fallback.")
+
     run_pipeline(config_path)
 
 if __name__ == "__main__":
