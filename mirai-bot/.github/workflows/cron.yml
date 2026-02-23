@@ -1,0 +1,46 @@
+name: Mirai-Yokai RSS Checker
+
+on:
+  schedule:
+    # 毎時0分に実行（日本時間では毎時9時）
+    - cron: '0 * * * *'
+  workflow_dispatch:  # 手動実行も可能に
+
+jobs:
+  check-rss:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: リポジトリをチェックアウト
+      uses: actions/checkout@v4
+      
+    - name: Python 3.12 をセットアップ
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+        
+    - name: 依存関係をインストール
+      run: |
+        pip install -r requirements.txt
+        
+    - name: 既読URLファイルを復元（Artifactsから）
+      uses: actions/cache@v4
+      id: cache-seen-urls
+      with:
+        path: data/seen_urls.txt
+        key: seen-urls-${{ github.run_id }}
+        restore-keys: |
+          seen-urls-
+          
+    - name: Phase 1 実行（RSS取得）
+      env:
+        RSS_URL: ${{ secrets.RSS_URL }}
+      run: |
+        python src/main.py
+        
+    - name: 既読URLファイルを保存
+      uses: actions/cache@v4
+      with:
+        path: data/seen_urls.txt
+        key: seen-urls-${{ github.run_id }}
