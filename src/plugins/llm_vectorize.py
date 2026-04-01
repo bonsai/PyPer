@@ -11,6 +11,10 @@ class Plugin(FilterPlugin):
         super().__init__(config)
         self.model = self.config.get("model", "text-embedding-004")
 
+    @property
+    def name(self) -> str:
+        return "Filter::LLM::Vectorize"
+
     def execute(self, entries: Iterator[Entry]) -> Iterator[Entry]:
         """
         Receives entries, vectorizes their content, and yields them back.

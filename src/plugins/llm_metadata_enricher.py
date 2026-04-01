@@ -55,6 +55,10 @@ Output MUST be in JSON format with keys: x_summary, blog_summary, tags, category
             return text[start:end]
         return None
 
+    @property
+    def name(self) -> str:
+        return "Filter::LLM::MetadataEnricher"
+
     def execute(self, entries: Iterator[Entry]) -> Iterator[Entry]:
         """
         Receives entries, calls Gemini API to enrich them, and yields them.

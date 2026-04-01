@@ -5,6 +5,7 @@ __pycache__/
 
 # Pytest cache
 .pytest_cache/
+.mypy_cache/
 
 # Python
 *.so
@@ -30,6 +31,10 @@ venv/
 env/
 ENV/
 .venv
+.venv/
+env.bak/
+venv.bak/
+__pypackages__/
 
 # 環境変数ファイル
 .env
@@ -53,7 +58,67 @@ logs/
 *.swp
 *.swo
 *~
+.spyderproject
+.spyproject
+.ropeproject
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+
+# Distribution / packaging
+*.manifest
+*.spec
+
+# Testing
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+*.cover
+*.py,cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+local_settings.py
+
+# Flask
+instance/
+.webassets-cache
+
+# Scrapy
+.scrapy
+
+# Sphinx
+docs/_build/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# mkdocs
+/site
+
+# mypy
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/

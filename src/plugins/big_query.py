@@ -14,6 +14,10 @@ class Plugin(PublishPlugin):
         if not self.table_id:
             raise ValueError("Config for BigQuery plugin must contain a 'table_id'.")
 
+    @property
+    def name(self) -> str:
+        return "Publish::BigQuery"
+
     def execute(self, entries: Iterator[Entry]):
         """
         Receives Entry objects and prints them to stdout for now.

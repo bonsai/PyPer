@@ -42,7 +42,6 @@ def load_plugin(plugin_config: Dict[str, Any]):
             module_filename = "big_query"
 
         module_path = f"plugins.{module_filename}"
-
         print(f"Loading plugin: '{module_str}' from '{module_path}'")
 
         plugin_module = importlib.import_module(module_path)

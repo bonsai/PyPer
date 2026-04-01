@@ -1,0 +1,15 @@
+# コア
+feedparser>=6.0.10
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Gemini API
+google-generativeai>=0.8.0
+Pillow>=10.0.0  # 画像処理用
+
+# HTTPリクエスト
+requests>=2.31.0
+httpx>=0.25.0
+
+# ユーティリティ
+python-dotenv>=1.0.0

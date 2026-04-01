@@ -18,6 +18,10 @@ class Plugin(SubscriptionPlugin):
         if not self.source_path:
             raise ValueError("Config for GoogleKeep plugin must contain a 'path'.")
 
+    @property
+    def name(self) -> str:
+        return "Subscription::GoogleKeep"
+
     def _describe_image_with_gemini(self, image_path: str) -> Optional[str]:
         """
         [MOCK] Describes the content of an image using a multimodal model.

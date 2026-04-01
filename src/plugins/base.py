@@ -21,7 +21,6 @@ class BasePlugin:
     """Base class for all plugins."""
     def __init__(self, config: Dict[str, Any]):
         self.config = config
-        self.name = self.__class__.__module__.split('.')[-1]
 
     def execute(self, *args, **kwargs):
         raise NotImplementedError(

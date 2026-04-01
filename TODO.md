@@ -23,7 +23,7 @@
 
 - [x] `Filter::LLM::Vectorize` プラグインの実装
 - [x] `Filter::LLM::MetadataEnricher` プラグインの実装
-- [ ] `Publish::Gmail` プラグインの実装
+- [x] `Publish::Gmail` プラグインの実装
 - [ ] ロギング機能の強化
 - [ ] エラーハンドリングの強化
 - [ ] 他の `Subscription` プラグインの実装

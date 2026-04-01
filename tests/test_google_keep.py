@@ -56,7 +56,7 @@ class TestGoogleKeepPluginMetadata(unittest.TestCase):
         # 2. Check basic entry fields
         expected_id = sha256(self.note_filename.encode()).hexdigest()
         self.assertEqual(entry.id, expected_id)
-        self.assertEqual(entry.source, "google_keep")
+        self.assertEqual(entry.source, "Subscription::GoogleKeep")
 
         expected_content = f"{self.fixture_data['title']}\\n\\n{self.fixture_data['textContent']}"
         self.assertEqual(entry.content, expected_content)
