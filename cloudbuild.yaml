@@ -1,0 +1,30 @@
+# Cloud Build configuration for PyPer
+steps:
+  # Build container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/pypert:$SHORT_SHA', '.']
+
+  # Push container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/pypert:$SHORT_SHA']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'pypert'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/pypert:$SHORT_SHA'
+      - '--platform'
+      - 'managed'
+      - '--region'
+      - 'asia-northeast1'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'PROJECT_ID=$PROJECT_ID,SERVICE_URL=https://pypert-$(echo $PROJECT_ID | tr -d "-").a.run.app'
+      - '--set-secrets'
+      - 'GMAIL_CLIENT_ID=GMAIL_CLIENT_ID:latest,GMAIL_CLIENT_SECRET=GMAIL_CLIENT_SECRET:latest,GMAIL_REFRESH_TOKEN=GMAIL_REFRESH_TOKEN:latest,GMAIL_USERNAME=GMAIL_USERNAME:latest,SECRET_KEY=SECRET_KEY:latest'
+
+images:
+  - 'gcr.io/$PROJECT_ID/pypert:$SHORT_SHA'

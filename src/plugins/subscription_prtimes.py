@@ -3,8 +3,9 @@ import requests
 import hashlib
 import logging
 import os
+from datetime import datetime
 from typing import Dict, Any, Iterator
-from base import Entry, SubscriptionPlugin
+from .base import Entry, SubscriptionPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,11 @@ class Plugin(SubscriptionPlugin):
     A subscription plugin to fetch press releases from PR Times.
     Fetches from the search results page for "発表会" keyword.
     """
-    
+
+    @property
+    def name(self) -> str:
+        return "Subscription::PRTimes"
+
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.base_url = self.config.get(
@@ -51,52 +56,55 @@ class Plugin(SubscriptionPlugin):
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
             "Accept-Language": "ja-JP,ja;q=0.9,en;q=0.8",
         }
-        
+
         try:
             response = requests.get(self.base_url, headers=headers, timeout=30)
             response.raise_for_status()
             html = response.text
-            
-            # 簡易 HTML パース（正規表現を使用）
-            import re
-            
-            # 各プレスリリースのエントリーを抽出
-            # PR Times の HTML 構造に基づき、タイトルと URL を抽出
-            pattern = r'<a[^>]*href="([^"]*\.html)"[^>]*>([^<]+)</a>'
-            matches = re.findall(pattern, html)
-            
+
+            # BeautifulSoup でパース
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html, 'html.parser')
+
+            # プレスリリースリンクを取得
+            links = soup.select('a[href*="/main/html/rd/p/"]')
+
             seen_in_session = set()
             count = 0
-            
-            for url, title in matches:
+
+            for link in links:
                 if count >= self.limit:
                     break
-                
+
+                url = link.get('href', '')
+                title = link.get_text(strip=True)
+
+                if not url or not title:
+                    continue
+
                 # 重複チェック
                 if url in seen_in_session:
                     continue
                 seen_in_session.add(url)
-                
+
                 # 既に送信済みの URL はスキップ
                 if url in self.seen_urls:
                     continue
-                
+
                 # 絶対 URL に変換
                 if not url.startswith("http"):
                     url = "https://prtimes.jp" + url if not url.startswith("/") else "https://prtimes.jp" + url
-                
-                title = title.strip()
-                
-                # サマリー生成（タイトルの一部を使用）
+
+                # サマリー生成
                 summary = f"{title} のプレスリリースが公開されました。"
-                
+
                 yield {
                     "title": title,
                     "url": url,
                     "summary": summary,
                 }
                 count += 1
-                
+
         except Exception as e:
             logger.error(f"Failed to fetch PR Times: {e}")
             raise
@@ -120,6 +128,7 @@ class Plugin(SubscriptionPlugin):
                 "url": url,
                 "title": title,
                 "source": "PR Times",
+                "timestamp": datetime.now().isoformat(),
             }
             
             yield Entry(

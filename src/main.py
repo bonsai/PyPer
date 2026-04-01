@@ -26,25 +26,35 @@ def load_plugin(plugin_config: Dict[str, Any]):
         raise ValueError("Plugin config must have a 'module' key.")
 
     try:
-        # Get the part of the name after the first '::' (e.g., "GoogleKeep", "LLM::Vectorize")
+        # Get the parts (e.g., "Subscription::PRTimes" -> ["Subscription", "PRTimes"])
         parts = module_str.split("::")
         if len(parts) < 2:
             raise ValueError(f"Invalid module name format: {module_str}")
 
+        category = parts[0].lower()  # subscription, publish, filter, etc.
         name_part = "::".join(parts[1:])
         # Handle names with multiple '::' like 'LLM::Vectorize'
         module_identifier = "_".join(name_part.split("::"))
-        # Convert the identifier to snake_case for the filename (e.g., "llm_vectorize")
+        # Convert the identifier to snake_case for the filename (e.g., "pr_times")
         module_filename = to_snake_case(module_identifier)
 
         # Handle some special cases if necessary
         if module_filename == "bigquery":
             module_filename = "big_query"
+        elif module_filename == "pr_times":
+            module_filename = "prtimes"
 
-        module_path = f"plugins.{module_filename}"
+        # Try with category prefix first (e.g., "subscription_prtimes")
+        module_path = f"plugins.{category}_{module_filename}"
         print(f"Loading plugin: '{module_str}' from '{module_path}'")
 
-        plugin_module = importlib.import_module(module_path)
+        try:
+            plugin_module = importlib.import_module(module_path)
+        except ImportError:
+            # Fallback to simple name (e.g., "gmail", "rss")
+            module_path = f"plugins.{module_filename}"
+            print(f"Fallback: Loading plugin '{module_str}' from '{module_path}'")
+            plugin_module = importlib.import_module(module_path)
         plugin_class = plugin_module.Plugin
 
         return plugin_class(plugin_config.get("config", {}))

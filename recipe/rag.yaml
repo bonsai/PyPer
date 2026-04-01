@@ -15,3 +15,7 @@ plugins:
   - module: Publish::BigQuery
     config:
       table_id: dummy_table
+
+  - module: Publish::Gmail
+    config:
+      recipient: test@example.com

@@ -13,6 +13,10 @@ class Plugin(SubscriptionPlugin):
     """
     A subscription plugin to fetch data from RSS feeds.
     """
+    @property
+    def name(self) -> str:
+        return "Subscription::RSS"
+
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.url = self.config.get("url")

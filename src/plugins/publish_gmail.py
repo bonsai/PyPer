@@ -5,7 +5,7 @@ import base64
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Dict, Any, Iterator, List, Optional
-from base import Entry, PublishPlugin
+from .base import Entry, PublishPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -182,16 +182,18 @@ class Plugin(PublishPlugin):
                 )
                 msg["From"] = self.from_addr
                 msg["To"] = ", ".join(self.to_addrs)
-                
+
                 # コンテンツ作成
                 title = entry.metadata.get("title", "No Title")
                 url = entry.metadata.get("url", "")
                 content = entry.content
-                
+                timestamp = entry.metadata.get("timestamp", "")
+
                 html_content = self.content_template.format(
                     title=title,
                     content=content,
                     url=url,
+                    timestamp=timestamp,
                 )
                 
                 # プレーンテキスト版も作成
