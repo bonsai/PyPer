@@ -21,6 +21,10 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
+# Import LINE API blueprint
+from .line_api import line_bp
+app.register_blueprint(line_bp)
+
 # Configuration
 PROJECT_ID = os.environ.get('PROJECT_ID', 'your-project-id')
 SERVICE_URL = os.environ.get('SERVICE_URL', 'http://localhost:8080')
@@ -156,7 +160,9 @@ def fetch_press_releases(limit: int = 5) -> list:
 @app.route('/')
 def index():
     """Landing page with subscription form."""
-    return render_template_string('''
+    # Serve LINE Mini App frontend if available
+    try:
+        return render_template_string('''
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -169,7 +175,7 @@ def index():
             max-width: 600px;
             margin: 0 auto;
             padding: 40px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00C300 0%, #009900 100%);
             min-height: 100vh;
         }
         .container {
@@ -188,66 +194,39 @@ def index():
             text-align: center;
             margin-bottom: 30px;
         }
-        .features {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-        .features li {
-            margin: 10px 0;
-            color: #555;
-        }
-        input[type="email"] {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
-        input[type="email"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        button:hover {
-            transform: translateY(-2px);
-        }
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        .message {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .success {
-            background: #d4edda;
-            color: #155724;
-        }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .footer {
-            text-align: center;
+        .methods {
+            display: grid;
+            gap: 20px;
             margin-top: 30px;
-            color: #999;
+        }
+        .method {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #00C300;
+        }
+        .method h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .method p {
+            color: #666;
+            font-size: 14px;
+            margin: 0;
+        }
+        .method a {
+            color: #00C300;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .badge {
+            display: inline-block;
+            background: #00C300;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
             font-size: 12px;
+            margin-left: 8px;
         }
     </style>
 </head>
@@ -256,69 +235,62 @@ def index():
         <h1>📰 PR Times 配信サービス</h1>
         <p class="subtitle">最新のプレスリリースを毎日お届け</p>
         
-        <div class="features">
-            <strong>✅ 特徴:</strong>
-            <ul>
-                <li>完全無料 - 一切費用かかりません</li>
-                <li>毎日 1 回 - 朝 9 時にお届け</li>
-                <li>ワンクリック解約 - いつでも解除可能</li>
-                <li>スパムなし - プレスリリースのみ送信</li>
-            </ul>
+        <div class="methods">
+            <div class="method">
+                <h3>🟢 LINE ミニアプリ <span class="badge">推奨</span></h3>
+                <p>LINE 内で完結！メールアドレス不要</p>
+                <p><a href="/line">LINE ミニアプリを開く →</a></p>
+            </div>
+            <div class="method">
+                <h3>📧 Email 配信</h3>
+                <p> Gmail で受信</p>
+                <p><a href="/email">メールアドレスで登録 →</a></p>
+            </div>
         </div>
         
-        <form id="subscribeForm">
-            <input type="email" id="email" name="email" placeholder="メールアドレスを入力" required>
-            <button type="submit" id="submitBtn">無料で登録する</button>
-        </form>
-        
-        <div id="message"></div>
-        
-        <div class="footer">
+        <div style="text-align: center; margin-top: 30px; color: #999; font-size: 12px;">
             <p>© 2024 PyPer. All rights reserved.</p>
-            <p><a href="/privacy">プライバシーポリシー</a></p>
         </div>
     </div>
-    
-    <script>
-        document.getElementById('subscribeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const btn = document.getElementById('submitBtn');
-            const message = document.getElementById('message');
-            
-            btn.disabled = true;
-            btn.textContent = '送信中...';
-            
-            try {
-                const response = await fetch('/api/subscribe', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email: email})
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    message.className = 'message success';
-                    message.textContent = '✓ 登録完了！確認メールを送信しました。';
-                    document.getElementById('email').value = '';
-                } else {
-                    message.className = 'message error';
-                    message.textContent = 'エラー：' + result.error;
-                }
-            } catch (err) {
-                message.className = 'message error';
-                message.textContent = 'エラー：通信に失敗しました';
-            }
-            
-            btn.disabled = false;
-            btn.textContent = '無料で登録する';
-        });
-    </script>
 </body>
 </html>
-    ''')
+        ''')
+    except Exception as e:
+        app.logger.error(f"Index error: {e}")
+        return jsonify({'error': 'Failed to load page'}), 500
+
+
+@app.route('/line')
+def line_minigram():
+    """LINE Mini App entry point."""
+    return render_template_string('''
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR Times 配信</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+        }
+        #root {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        var liffId = '{{ liff_id }}';
+    </script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
+    ''', liff_id=os.environ.get('LINE_LIFF_ID', ''))
 
 
 @app.route('/api/subscribe', methods=['POST'])

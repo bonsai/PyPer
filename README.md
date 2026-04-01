@@ -1,27 +1,28 @@
 # PyPer - プレスリリース自動配信サービス
 
-PR Times のプレスリリースを毎日自動で Gmail 配信するサービスです。
+PR Times のプレスリリースを毎日自動で配信するサービスです。
 
 ## 🚀 3 分で開始（非技術者向け）
 
-### 方法 1: Google Apps Script（推奨・完全無料）
+### 方法 1: LINE ミニアプリ（推奨）
 
-**コピペするだけ！5 分で設定完了**
+**LINE 内で完結！一番簡単**
+
+1. LINE アカウントでログイン
+2. メールアドレス登録不要
+3. ワンクリックで登録・解約
+
+👉 **設定手順**: [LINE_SETUP.md](LINE_SETUP.md)
+
+### 方法 2: Google Apps Script
+
+**コピペするだけ！完全無料**
 
 1. [script.google.com](https://script.google.com/) にアクセス
-2. 「新しいプロジェクト」をクリック
-3. `gas/Code.gs` の内容をコピーして貼り付け
-4. 実行権限を許可してトリガー設定
+2. `gas/Code.gs` をコピーして貼り付け
+3. トリガーを設定
 
 👉 **詳細手順**: [SETUP_GUIDE.md](SETUP_GUIDE.md#方法-1-google-apps-script 推奨完全無料)
-
-### 方法 2: Google Colab（お試し）
-
-**ブラウザですぐ実行**
-
-1. [colab.research.google.com](https://colab.research.google.com/) にアクセス
-2. `colab/pypert_pipeline.ipynb` をアップロード
-3. 各セルを実行
 
 ### 方法 3: Cloud Run（本格運用）
 
