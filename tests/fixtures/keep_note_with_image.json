@@ -1,0 +1,17 @@
+{
+  "textContent": "これは画像付きのテストメモです。Gemini Proが後で内容を理解できるか試します。",
+  "title": "画像テスト",
+  "createdTimestampUsec": 1672531200000000,
+  "lastModifiedTimestampUsec": 1672534800000000,
+  "userEditedTimestampUsec": 1672534800000000,
+  "isArchived": true,
+  "isPinned": false,
+  "isTrashed": false,
+  "color": "BLUE",
+  "attachments": [
+    {
+      "filePath": "test_image.jpg",
+      "mimetype": "image/jpeg"
+    }
+  ]
+}

@@ -1,7 +1,12 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Pytest cache
+.pytest_cache/
+
+# Python
 *.so
 .Python
 build/
