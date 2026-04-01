@@ -1,0 +1,13 @@
+PyYAML
+google-cloud-bigquery
+google-cloud-aiplatform
+feedparser
+tweepy
+google-generativeai
+requests
+pydantic
+Pillow
+python-dotenv
+google-auth
+google-auth-oauthlib
+google-auth-httplib2

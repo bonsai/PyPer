@@ -1,0 +1,53 @@
+# PR Times プレスリリース→Gmail 送信
+# 検索キーワード「発表会」の最新プレスリリースをメールで送信
+
+global:
+  timezone: Asia/Tokyo
+  log_level: info
+  max_workers: 1
+
+plugins:
+  # 1. PR Times からプレスリリース取得
+  - module: Subscription::PRTimes
+    config:
+      url: https://prtimes.jp/main/action.php?run=html&page=searchkey&search_word=%E7%99%BA%E8%A1%A8%E4%BC%9A
+      limit: 3
+      state_file: prtimes_state.txt
+
+  # 2. Gmail で送信（OAuth2 対応）
+  - module: Publish::Gmail
+    config:
+      # 基本設定
+      username: ${GMAIL_USERNAME}
+      from_addr: ${GMAIL_USERNAME}
+      to_addrs:
+        - onsen.bonsai+pr@gmail.com
+      
+      # OAuth2 設定（推奨）
+      use_oauth: ${USE_OAUTH:-true}
+      oauth_client_id: ${OAUTH_CLIENT_ID}
+      oauth_client_secret: ${OAUTH_CLIENT_SECRET}
+      oauth_refresh_token: ${OAUTH_REFRESH_TOKEN}
+      oauth_access_token: ${OAUTH_ACCESS_TOKEN}
+      oauth_token_file: oauth_token.json
+      
+      # フォールバック：アプリパスワード（OAuth 未設定時）
+      # password: ${GMAIL_PASSWORD}
+      
+      # メール設定
+      subject_template: "【PR Times】{title}"
+      content_template: |
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">{title}</h2>
+          <p style="color: #666; line-height: 1.6;">{content}</p>
+          <p style="margin-top: 20px;">
+            <a href="{url}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">元記事を読む</a>
+          </p>
+          <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
+          <p style="color: #999; font-size: 12px;">
+            出典：PR Times<br>
+            送信日時：{timestamp}
+          </p>
+        </body>
+        </html>
