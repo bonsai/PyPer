@@ -1,0 +1,82 @@
+# PyPer as Plagger Wrapper
+# plagger.yaml - Plagger pipeline configuration for PyPer
+
+pipeline:
+  name: "NHK News → Gmail"
+  
+  # ── Input (Subscription) ──
+  subscription:
+    - module: subscription.rss.Plugin
+      config:
+        urls:
+          - https://news.web.nhk/n-data/conf/na/rss/cat0.xml
+        limit: 5
+        state_file: data/nhk_rss_state.txt
+
+  # ── Process (Filter) ──
+  filters:
+    - module: filter.llm_metadata_enricher.Plugin
+      config:
+        enabled: false  # Skip LLM for now (API key issue)
+
+    - module: filter.vectorize.Plugin  # 既存のベクトル化
+      config:
+        enabled: false  # 必要に応じてtrue
+
+  # ── Output (Publish) ──
+  publish:
+    - module: publish.nhk_gmail.Plugin
+      config:
+        to: onsen.bonsai@gmail.com
+        from: onsen.bonsai@gmail.com
+        username: onsen.bonsai@gmail.com
+        password: ""  # Set via env var or OAuth
+        use_oauth: true
+        oauth_token_file: "C:\\Users\\dance\\.qwen\\gmail_token.pickle"
+
+    - module: publish.slack.Plugin  # ← NEW: Slack通知
+      config:
+        enabled: false  # 必要に応じてtrue
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+        channel: "#news"
+
+    - module: publish.twitter.Plugin  # ← NEW: Twitter投稿
+      config:
+        enabled: false
+        api_key: "${TWITTER_API_KEY}"
+        api_secret: "${TWITTER_API_SECRET}"
+        access_token: "${TWITTER_ACCESS_TOKEN}"
+        access_secret: "${TWITTER_ACCESS_SECRET}"
+
+# ── Plagger互換設定 (レガシーplugin呼び出し用) ──
+plagger_compat:
+  enabled: true
+  plagger_path: "C:\\Users\\dance\\Documents\\MEGA\\plagger"
+  perl_cmd: "perl"
+  
+  # 既存のPerl Plagger pluginをPythonから呼び出し
+  plugins:
+    - module: Filter::EntryFullText
+      config:
+        enabled: false  # 必要に応じてtrue
+    
+    - module: Notify::Eject
+      config:
+        enabled: false  # CDドライブ開閉w
+
+# ── スケジュール ──
+schedule:
+  cron: "0 7,12,18 * * *"  # 7時, 12時, 18時に実行
+  timezone: Asia/Tokyo
+
+# ── 監視 ──
+monitoring:
+  log_level: info
+  metrics:
+    enabled: true
+    prometheus_port: 9090
+  alerts:
+    on_failure:
+      - module: notify.line.Plugin
+        config:
+          webhook: "${LINE_WEBHOOK_URL}"

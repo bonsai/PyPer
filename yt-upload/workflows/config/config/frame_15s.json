@@ -1,0 +1,112 @@
+{
+  "name": "15秒雑学3連発",
+  "total_duration_sec": 15,
+  "voice_speed": 1.4,
+  "items_per_video": 3,
+  "sec_per_item": 4.5,
+
+  "timeline": [
+    {
+      "id": "hook",
+      "sec_start": 0.0,
+      "sec_end": 1.5,
+      "duration": 1.5,
+      "purpose": "タイトル/フック",
+      "text": "{channel_name}",
+      "visual": "タイトルカード 0.3秒表示→即フェード",
+      "audio": "ビープ音 or カウントダウン音"
+    },
+    {
+      "id": "fact_1",
+      "sec_start": 1.5,
+      "sec_end": 6.0,
+      "duration": 4.5,
+      "purpose": "ネタ1",
+      "text": "{fact_1}",
+      "visual": "背景画像 + 中央テロップ",
+      "audio": "BGM (音量20%)"
+    },
+    {
+      "id": "fact_2",
+      "sec_start": 6.0,
+      "sec_end": 10.5,
+      "duration": 4.5,
+      "purpose": "ネタ2",
+      "text": "{fact_2}",
+      "visual": "背景切り替え + テロップ",
+      "audio": "BGM継続"
+    },
+    {
+      "id": "fact_3",
+      "sec_start": 10.5,
+      "sec_end": 14.0,
+      "duration": 3.5,
+      "purpose": "ネタ3（最強）",
+      "text": "{fact_3}",
+      "visual": "背景切り替え + 赤テロップ強調",
+      "audio": "BGM継続 + 終了SE"
+    },
+    {
+      "id": "loop_gap",
+      "sec_start": 14.0,
+      "sec_end": 15.0,
+      "duration": 1.0,
+      "purpose": "余白（ループ誘発）",
+      "text": "",
+      "visual": "フェードアウト",
+      "audio": "無音→即hookに戻る"
+    }
+  ],
+
+  "style": {
+    "canvas": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "aspect": "9:16"
+    },
+    "background": {
+      "type": "dark_gradient",
+      "colors": ["#0a0a0a", "#1a1a2e", "#16213e"]
+    },
+    "font": {
+      "family": "Noto Sans JP",
+      "color": "#FFFFFF",
+      "outline_color": "#000000",
+      "outline_width": 4,
+      "size": {
+        "title": 72,
+        "body": 56,
+        "accent": 64
+      }
+    },
+    "accent_colors": {
+      "warning": "#FF3333",
+      "info": "#FFD700",
+      "normal": "#FFFFFF"
+    }
+  },
+
+  "audio": {
+    "bgm": {
+      "genre": "minimal_suspense",
+      "volume_pct": 20
+    },
+    "voice": {
+      "engine": "VOICEVOX",
+      "speaker_id": 1,
+      "speed": 1.4,
+      "pitch": 0.0
+    },
+    "sfx": {
+      "transition": "whoosh_short",
+      "end": "click"
+    }
+  },
+
+  "output": {
+    "format": "mp4",
+    "bitrate": "8000k",
+    "audio_bitrate": "128k"
+  }
+}

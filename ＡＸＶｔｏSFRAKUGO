@@ -1,0 +1,244 @@
+# ═══════════════════════════════════════════════════════════
+# 🎭 SF落語生成 × arXiv × YouTube 投稿 Colab
+# 使い方: このコードを新規 Colab に貼り付けて実行するだけ！
+# ═══════════════════════════════════════════════════════════
+
+# ── [1] 必要なライブラリのインストール ───────────────────────
+!pip install -q arxiv google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client gTTS pydub
+
+# ── [2] 認証設定（YouTube 投稿用）──────────────────────────
+from google.colab import auth
+auth.authenticate_user()
+print("✅ Google 認証完了")
+
+# ── [3] 設定パラメータ ─────────────────────────────────────
+import random
+
+CONFIG = {
+    "categories": ["cs.AI", "cs.CL", "cs.LG", "physics", "astro-ph"],  # 対象カテゴリ
+    "max_results": 50,           # 取得候補数
+    "rakugo_style": "SF落語",     # 出力スタイル
+    "tts_language": "ja",         # TTS 言語
+    "youtube_title_prefix": "【SF落語】arXiv論文で噺を作る: ",  # YouTube タイトル接頭辞
+    "youtube_description": "arXiv の論文を元に生成した SF 落語です。#arXiv #SF落語 #AI生成",
+}
+
+# ── [4] arXiv API からランダム論文を取得 ─────────────────────
+import arxiv
+import time
+
+def fetch_random_paper():
+    """arXiv API からランダムに論文を取得"""
+    category = random.choice(CONFIG["categories"])
+    search = arxiv.Search(
+        query=f"cat:{category}",
+        max_results=CONFIG["max_results"],
+        sort_by=arxiv.SortCriterion.SubmittedDate
+    )
+    papers = list(search.results())
+    
+    if not papers:
+        raise ValueError("論文が見つかりませんでした")
+    
+    # ランダムに 1 本選択（新しすぎないものを選ぶ）
+    selected = random.choice(papers[5:])  # 最新 5 本は除外
+    return selected
+
+print("📚 論文を取得中...")
+paper = fetch_random_paper()
+print(f"🎯 選択された論文: {paper.title[:60]}...")
+print(f"🔗 arXiv ID: {paper.entry_id.split('/')[-1]}")
+print(f"📝 要約: {paper.summary[:200]}...")
+
+# ── [5] SF落語スクリプト生成（Gemini API 使用）──────────────
+# Colab なら無料で Gemini が使えます！
+!pip install -q google-generativeai
+
+import google.generativeai as genai
+from google.colab import userdata
+
+# API Key 設定（Colab 秘密情報から取得、または直接入力）
+try:
+    GEMINI_KEY = userdata.get('GEMINI_API_KEY')
+except:
+    print("⚠️ GEMINI_API_KEY が見つかりません。直接入力してください:")
+    GEMINI_KEY = input("Gemini API Key: ").strip()
+
+genai.configure(api_key=GEMINI_KEY)
+
+def generate_rakugo_script(paper):
+    """論文メタデータから SF 落語スクリプトを生成"""
+    
+    prompt = f"""
+あなたは江戸時代の落語家ですが、実は 22 世紀からタイムスリップしてきた科学者です。
+以下の arXiv 論文の内容を元に、3〜5 分程度の「SF 落語」の台本を作成してください。
+
+【論文情報】
+タイトル: {paper.title}
+著者: {', '.join([a.name for a in paper.authors[:3]])}
+要約: {paper.summary}
+カテゴリ: {paper.categories}
+
+【落語の形式】
+- 冒頭: 「さて、今宵は未来の科学のお話をひとつ...」で始める
+- 本編: 論文の内容を「未来の道具」「宇宙の出来事」「AI の珍事」などに置き換えて噺にする
+- 落ち: 科学的なオチ＋笑えるダジャレで締める
+- 全体: 口語体、読み上げやすい文、1 文は短めに
+- 長さ: 日本語で 800〜1200 字程度
+
+【出力形式】
+純粋な台本のみを出力。余計な説明やマークダウンは不要。
+"""
+    
+    model = genai.GenerativeModel('gemini-2.0-flash')
+    response = model.generate_content(prompt)
+    return response.text
+
+print("🎭 SF 落語スクリプト生成中...")
+rakugo_script = generate_rakugo_script(paper)
+print("\n" + "═"*50)
+print(rakugo_script)
+print("═"*50 + "\n")
+
+# ── [6] 音声生成（gTTS + 日本語読み上げ）────────────────────
+from gtts import gTTS
+from IPython.display import Audio, display
+
+print("🔊 音声生成中...")
+
+# 日本語 TTS（gTTS）
+tts = gTTS(text=rakugo_script, lang='ja', slow=False)
+audio_path = "/content/sf_rakugo.mp3"
+tts.save(audio_path)
+
+# Colab でプレビュー
+print("🎧 生成された音声（プレビュー）:")
+display(Audio(audio_path))
+
+# ── [7] 動画作成（静止画＋音声）────────────────────────────
+from pydub import AudioSegment
+import moviepy.editor as mp
+from PIL import Image, ImageDraw, ImageFont
+import numpy as np
+
+print("🎬 動画生成中...")
+
+# 背景画像作成（シンプル和風）
+def create_bg_image(title, width=1280, height=720):
+    img = Image.new('RGB', (width, height), color=(20, 20, 40))  # 濃紺背景
+    draw = ImageDraw.Draw(img)
+    
+    # 簡易フォント（Colab 環境用）
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/takao-pgothic/TakaoPGothic.ttf", 36)
+        title_font = ImageFont.truetype("/usr/share/fonts/truetype/takao-pgothic/TakaoPGothic.ttf", 48)
+    except:
+        font = ImageFont.load_default()
+        title_font = font
+    
+    # タイトル表示
+    draw.text((640, 100), "🎭 SF落語劇場", fill=(255, 215, 0), font=title_font, anchor="mt")
+    
+    # 論文タイトル（折り返し処理）
+    words = title.split()
+    lines, current = [], ""
+    for word in words:
+        if len(current) + len(word) < 40:
+            current += " " + word
+        else:
+            lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    
+    y_pos = 200
+    for line in lines[:5]:  # 最大 5 行
+        draw.text((640, y_pos), line.strip(), fill=(200, 200, 255), font=font, anchor="mt")
+        y_pos += 50
+    
+    # 装飾
+    draw.rectangle([(100, 600), (1180, 620)], fill=(100, 100, 150))
+    draw.text((640, 610), "arXiv × AI × 落語", fill=(255, 255, 255), font=font, anchor="mt")
+    
+    return img
+
+bg_image_path = "/content/bg.png"
+img = create_bg_image(paper.title)
+img.save(bg_image_path)
+
+# 動画作成（画像＋音声）
+audio = AudioSegment.from_mp3(audio_path)
+duration_sec = len(audio) / 1000
+
+clip = mp.ImageClip(bg_image_path).set_duration(duration_sec)
+audio_clip = mp.AudioFileClip(audio_path)
+video = clip.set_audio(audio_clip)
+
+video_path = "/content/sf_rakugo_video.mp4"
+video.write_videofile(video_path, fps=24, codec='libx264', audio_codec='aac')
+print(f"✅ 動画完成: {video_path} ({duration_sec:.1f} 秒)")
+
+# ── [8] YouTube へアップロード ─────────────────────────────
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+import os
+
+def upload_to_youtube(video_file, title, description, category_id="28"):
+    """YouTube Data API v3 で動画をアップロード"""
+    
+    youtube = build("youtube", "v3", credentials=None)  # Colab 認証済み
+    
+    body = {
+        "snippet": {
+            "title": title,
+            "description": description,
+            "tags": ["arXiv", "SF 落語", "AI", "論文", "生成 AI"],
+            "categoryId": category_id  # 28 = Science & Technology
+        },
+        "status": {
+            "privacyStatus": "public",  # "private" / "unlisted" / "public"
+            "selfDeclaredMadeForKids": False
+        }
+    }
+    
+    media = MediaFileUpload(video_file, chunksize=-1, resumable=True)
+    
+    request = youtube.videos().insert(
+        part=",".join(body.keys()),
+        body=body,
+        media_body=media
+    )
+    
+    response = None
+    while response is None:
+        status, response = request.next_chunk()
+        if status:
+            print(f"📤 アップロード進捗: {int(status.progress() * 100)}%")
+    
+    return response
+
+# 投稿実行
+youtube_title = f"{CONFIG['youtube_title_prefix']}{paper.title[:50]}"
+print(f"\n🚀 YouTube へ投稿開始: {youtube_title}")
+
+try:
+    response = upload_to_youtube(
+        video_path,
+        title=youtube_title,
+        description=f"{CONFIG['youtube_description']}\n\n元論文: {paper.entry_id}"
+    )
+    video_url = f"https://youtu.be/{response['id']}"
+    print(f"\n🎉 投稿完了！\n🔗 {video_url}")
+except Exception as e:
+    print(f"⚠️ 投稿中にエラー: {e}")
+    print("💡 動画ファイルは /content/sf_rakugo_video.mp4 に保存されています")
+
+# ── [9] まとめ表示 ─────────────────────────────────────────
+print("\n" + "🎊"*25)
+print("【本日の SF 落語まとめ】")
+print(f"📚 元論文: {paper.title}")
+print(f"🔗 arXiv: {paper.entry_id}")
+print(f"🎭 落語スクリプト: {len(rakugo_script)} 文字")
+print(f"🔊 音声: {duration_sec:.1f} 秒")
+print(f"🎬 動画: {video_path}")
+print("🎊"*25)

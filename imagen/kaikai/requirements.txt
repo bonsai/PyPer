@@ -1,0 +1,28 @@
+# ComfyUI Kaikai Character Generator - Dependencies
+# For Google Colab environment
+
+# Core ComfyUI dependencies
+torch
+torchvision
+torchaudio
+xformers
+
+# Image processing
+Pillow>=10.0.0
+opencv-python-headless
+
+# API & Network
+requests
+urllib3
+
+# Visualization
+matplotlib
+
+# Optional: ngrok tunnel (alternative to cloudflare)
+# pyngrok
+
+# Optional: For advanced workflows
+# einops
+# transformers
+# accelerate
+# safetensors

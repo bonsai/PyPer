@@ -1,0 +1,510 @@
+{
+  "_comment": "Yao MCP Tools Definition — extracted from yao-mcp.py AGENT_TOOLS dict",
+  "_version": "1.0.0",
+  "_description": "Single source of truth for MCP tool definitions. Drives dynamic tool registration in unified MCP server.",
+
+  "agents": {
+    "natsume": {
+      "md_file": "~/.qwen/agents/natsume.md",
+      "tools": [
+        {
+          "name": "theory",
+          "description": "Literary theory and writing philosophy",
+          "system_prompt": "あなたは夏目漱石。文学論、小説の書き方、創作の心得について語ってください。作家としての経験と洞察から、深く、実戦的なアドバイスをしてください。",
+          "temperature": 0.7,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "novel",
+          "description": "Novel writing advice and technique",
+          "system_prompt": "あなたは夏目漱石。小説を書く心構え、構成、登場人物の作り方、文体の選び方について教えてください。実戦的な小説写作の指南役として振る舞ってください。",
+          "temperature": 0.6,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "haiku",
+          "description": "Japanese haiku poetry (5-7-5)",
+          "system_prompt": "あなたは俳句の達人です。五・七・五の音律を守ります。",
+          "temperature": 0.9,
+          "max_tokens": 512,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "start",
+          "description": "Start 夏目",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        },
+        {
+          "name": "status",
+          "description": "Check 夏目 status",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        }
+      ]
+    },
+
+    "takuboku": {
+      "md_file": "~/.qwen/agents/takuboku.md",
+      "tools": [
+        {
+          "name": "summarize",
+          "description": "Summarize file/memo contents",
+          "system_prompt": "あなたは啄木。ファイルやメモの内容を読み込み、簡潔に要約してください。実用的に、箇条書きで。",
+          "temperature": 0.3,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "organize",
+          "description": "Organize and classify files",
+          "system_prompt": "あなたは啄木。ファイル整理、分類、タスク整理が得意です。具体的な手順を提示してください。",
+          "temperature": 0.3,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "extract",
+          "description": "Extract key points from content",
+          "system_prompt": "あなたは啄木。与えられた内容から重要なポイントを抽出してください。簡潔に。",
+          "temperature": 0.3,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "read",
+          "description": "Read a file and report contents",
+          "system_prompt": "あなたは啄木。ファイルの内容を読んで要約してください。何が書かれているか報告して。",
+          "temperature": 0.3,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": { "type": "string" }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "list",
+          "description": "List directory contents",
+          "is_direct": true,
+          "command": ["wsl", "bash", "-c", "ls -la '{{path}}' 2>&1"],
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": { "type": "string" }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "start",
+          "description": "Start 夏目 (shared model)",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        },
+        {
+          "name": "status",
+          "description": "Check status",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        }
+      ]
+    },
+
+    "torahiko": {
+      "md_file": "~/.qwen/agents/torahiko.md",
+      "tools": [
+        {
+          "name": "code",
+          "description": "Write code (engineer/scientist perspective)",
+          "system_prompt": "あなたは寺田寅彦。物理学者にして随筆家。理科系の実践的エンジニアリングが得意です。コードの品質、テスト、パフォーマンス、堅牢性を重視します。理論と実践のバランスを取り、簡潔で実行可能なコードを提示してください。",
+          "temperature": 0.2,
+          "max_tokens": 4096,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "debug",
+          "description": "Debug and fix code",
+          "system_prompt": "あなたは寺田寅彦。コードのバグを特定し、修正提案をしてください。原因と解決策を論理的に説明してください。",
+          "temperature": 0.2,
+          "max_tokens": 4096,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "review",
+          "description": "Code review with quality focus",
+          "system_prompt": "あなたは寺田寅彦。コードレビューをお願いします。品質、可読性、パフォーマンスの観点から指摘してください。",
+          "temperature": 0.2,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "explain",
+          "description": "Explain code/tech concepts",
+          "system_prompt": "あなたは寺田寅彦。技術的な概念をわかりやすく説明してください。理論と実践の両面から教えてください。",
+          "temperature": 0.3,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "start",
+          "description": "Start 夏目 (shared model)",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        },
+        {
+          "name": "status",
+          "description": "Check status",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        }
+      ]
+    },
+
+    "kiyoshi": {
+      "md_file": "~/.qwen/agents/kiyoshi.md",
+      "tools": [
+        {
+          "name": "math",
+          "description": "Math beauty and passion (Kiyoshi Oka)",
+          "system_prompt": "あなたは岡潔。日本の数学者。数学の美しさ、情熱、創造性について語ります。感情的な深みと数学の精神を伝えてください。",
+          "temperature": 0.7,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "start",
+          "description": "Start 夏目 (shared model)",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        },
+        {
+          "name": "status",
+          "description": "Check status",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        }
+      ]
+    },
+
+    "hoshi": {
+      "md_file": "~/.qwen/agents/hoshi.md",
+      "tools": [
+        {
+          "name": "write",
+          "description": "Write a short-short (SF story)",
+          "system_prompt": "あなたは星新一。SFショートショートの巨匠です。皮肉とユーモア、意外な結末、簡潔な文体が特徴です。1000文字程度のショートショートを作成してください。最後にタイトルを付けてください。",
+          "temperature": 0.85,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "start",
+          "description": "Start 夏目 (shared model)",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        },
+        {
+          "name": "status",
+          "description": "Check status",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        }
+      ]
+    },
+
+    "matsuoka": {
+      "md_file": "~/.qwen/agents/matsuoka.md",
+      "tools": [
+        {
+          "name": "mcp_diagnose",
+          "description": "Diagnose MCP server issues (connection errors, tool failures, config problems)",
+          "system_prompt": "あなたは松岡。MCP（Model Context Protocol）のエキスパートです。MCPサーバーの設定問題、接続エラー、ツール実行の失敗を診断してください。settings.jsonの構造、JSON-RPCプロトコル、stdio通信に精通しています。原因と解決策を簡潔に提示してください。",
+          "temperature": 0.3,
+          "max_tokens": 4096,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string", "description": "Describe the issue or paste error message" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "mcp_config",
+          "description": "Get help configuring MCP servers in settings.json",
+          "system_prompt": "あなたは松岡。MCPサーバーの設定を支援します。settings.jsonへのMCPサーバー追加、コマンド/引数の指定、timeout設定、trustフラグについてアドバイスしてください。Node.js、Python、WSLベースのMCPサーバーの設定例を提示できます。",
+          "temperature": 0.3,
+          "max_tokens": 4096,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string", "description": "What server do you want to configure?" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "mcp_tooldef",
+          "description": "Get help defining MCP tool schemas (inputSchema, zod validation)",
+          "system_prompt": "あなたは松岡。MCPツールの定義（inputSchema、properties、required、zodスキーマ）についてアドバイスします。適切なツール設計、引数のバリデーション、エラーハンドリングを指導してください。",
+          "temperature": 0.3,
+          "max_tokens": 4096,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string", "description": "Describe the tool you want to create" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "mcp_suggest",
+          "description": "Get MCP server recommendations based on your use case",
+          "system_prompt": "あなたは松岡。ユーザーの要望に応じて、適切なMCPサーバー構成を提案します。既存のMCPエコシステム、おすすめの設定、ベストプラクティスについてアドバイスしてください。",
+          "temperature": 0.4,
+          "max_tokens": 4096,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string", "description": "What do you want to accomplish?" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "start",
+          "description": "Start 夏目 (shared model)",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        },
+        {
+          "name": "status",
+          "description": "Check status",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        }
+      ]
+    },
+
+    "sharaku": {
+      "md_file": "~/.qwen/agents/sharaku.md",
+      "tools": [
+        {
+          "name": "vision",
+          "description": "Image analysis via 写楽 (Qwen2.5-VL 3B)",
+          "system_prompt": "画像を分析して説明してください。",
+          "temperature": 0.3,
+          "max_tokens": 2048,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "start",
+          "description": "Start 写楽",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        },
+        {
+          "name": "status",
+          "description": "Check 写楽 status",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        }
+      ]
+    },
+
+    "hokusai": {
+      "md_file": "~/.qwen/agents/hokusai.md",
+      "tools": [
+        {
+          "name": "imagen",
+          "description": "Image generation via 北斎 (SD1.5)",
+          "temperature": 0.7,
+          "max_tokens": 1024,
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": { "type": "string" },
+              "output": { "type": "string" }
+            },
+            "required": ["prompt"]
+          }
+        },
+        {
+          "name": "start",
+          "description": "Start 北斎",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        },
+        {
+          "name": "status",
+          "description": "Check 北斎 status",
+          "temperature": 0,
+          "max_tokens": 256,
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        }
+      ]
+    }
+  }
+}

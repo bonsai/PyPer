@@ -1,6 +1,6 @@
-# PR Times プレスリリース→RSS 生成→メール送信
-# PRTIMES マイページから RSS を生成してメール送信
-# 送信方法は環境変数 USE_LOCAL_SMTP で切り替え（true=ローカル SMTP, false=Gmail）
+# PR Times プレスリリース→RSS 生成→Gmail 送信
+# PRTIMES マイページから RSS を生成して Gmail で送信
+# Gmail OAuth2 認証を使用
 
 global:
   timezone: Asia/Tokyo
@@ -24,49 +24,16 @@ plugins:
       rss_file: "data/prtimes_mypage_feed.xml"
       rss_url: "${RSS_URL:-}"
 
-  # 3. メール送信
-  # USE_LOCAL_SMTP=true の場合：ローカル SMTP 送信（secretaryMEI@localhost）
-  # USE_LOCAL_SMTP=false または未設定の場合：Gmail 送信（OAuth2 認証）
-  - module: Publish::LocalSMTP
-    config:
-      enabled: ${USE_LOCAL_SMTP:-false}
-      smtp_host: localhost
-      smtp_port: 1025
-      from_addr: secretaryMEI@localhost
-      from_name: 秘書メイ
-      to_addrs:
-        - onsen.bonsai+prt@gmail.com
-        - yokouchi.tomohiro@gmail.com
-      
-      # メール設定
-      subject_template: "【PR Times】{title}"
-      content_template: |
-        <html>
-        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">{title}</h2>
-          <p style="color: #666; line-height: 1.6;">{content}</p>
-          <p style="margin-top: 20px;">
-            <a href="{url}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">元記事を読む</a>
-          </p>
-          <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
-          <p style="color: #999; font-size: 12px;">
-            出典：PR Times<br>
-            送信日時：{timestamp}
-          </p>
-        </body>
-        </html>
-
-  # Gmail 送信（USE_LOCAL_SMTP=false の場合のみ実行）
+  # 3. Gmail で送信（OAuth2 対応）
   - module: Publish::Gmail
     config:
-      enabled: ${USE_LOCAL_SMTP_FALSE:-true}
       # 基本設定
       username: ${GMAIL_USERNAME}
       from_addr: ${GMAIL_USERNAME}
       from_name: 秘書メイ
       to_addrs:
         - onsen.bonsai+prt@gmail.com
-        - yokouchi.tomohiro@gmail.com
+        
       
       # OAuth2 設定
       use_oauth: ${USE_OAUTH:-true}
@@ -77,7 +44,7 @@ plugins:
       oauth_token_file: data/oauth_token.json
       
       # メール設定
-      subject_template: "【PR Times】{title}"
+      subject_template: "PRT {title}"
       content_template: |
         <html>
         <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

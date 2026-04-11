@@ -1,0 +1,80 @@
+{
+  "3": {
+    "inputs": {
+      "seed": 12345,
+      "steps": 35,
+      "cfg": 7.5,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["5", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "4": {
+    "inputs": {
+      "ckpt_name": "animagine-xl-3.1.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent Image"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "masterpiece, best quality, high detail,\ncharacter design sheet, single character, centered,\ncute creature with building-shaped body,\ntower-like form with multiple window-eyes,\nflowers blooming from the top of head,\ncolorful facade patterns on body,\nflat color style, bold black outlines,\npop art aesthetic, superflat inspired,\nvibrant rainbow colors, high saturation,\nkawaii but slightly eerie expression,\nsimple white background,\n2d illustration, vector-like clean lines,\ncontemporary art style, sharp details",
+      "clip": ["4", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Positive Prompt"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "realistic, photograph, 3d render,\nlow quality, worst quality, blurry, dark, muted colors,\ncomplex background, gradient shading,\nwestern comic style, sketchy lines,\nwatermark, text, signature, bad anatomy, deformed,\nmultiple characters, cropped",
+      "clip": ["4", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative Prompt"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": ["3", 0],
+      "vae": ["4", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": "character",
+      "images": ["8", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}

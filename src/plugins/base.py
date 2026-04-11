@@ -19,6 +19,8 @@ class Entry:
 
 class BasePlugin:
     """Base class for all plugins."""
+    name = "BasePlugin"
+    
     def __init__(self, config: Dict[str, Any]):
         self.config = config
 

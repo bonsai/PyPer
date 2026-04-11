@@ -1,0 +1,54 @@
+# PR Times プレスリリース→RSS 生成→ローカル SMTP 送信
+# PRTIMES マイページから RSS を生成してローカル SMTP サーバーで送信
+# 送信元アドレスは自由に設定可能
+
+global:
+  timezone: Asia/Tokyo
+  log_level: info
+  max_workers: 1
+
+plugins:
+  # 1. PR Times からプレスリリース取得
+  - module: Subscription::PRTimes
+    config:
+      url: https://prtimes.jp/main/action.php?run=html&page=searchkey&search_word=%E7%99%BA%E8%A1%A8%E4%BC%9A
+      limit: 10
+      state_file: data/prtimes_state.txt
+
+  # 2. RSS フィード生成
+  - module: Filter::RSSGenerator
+    config:
+      rss_title: "PR Times マイページ RSS"
+      rss_link: "https://prtimes.jp/my_social/"
+      rss_description: "PR Times マイページの最新プレスリリース"
+      rss_file: "data/prtimes_mypage_feed.xml"
+      rss_url: "${RSS_URL:-}"
+
+  # 3. ローカル SMTP サーバーで送信
+  - module: Publish::LocalSMTP
+    config:
+      smtp_host: localhost
+      smtp_port: 1025
+      from_addr: secretaryMEI@localhost
+      from_name: 秘書メイ
+      to_addrs:
+        - onsen.bonsai+prt@gmail.com
+       
+      
+      # メール設定
+      subject_template: "{title}"
+      content_template: |
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">{title}</h2>
+          <p style="color: #666; line-height: 1.6;">{content}</p>
+          <p style="margin-top: 20px;">
+            <a href="{url}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">元記事を読む</a>
+          </p>
+          <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
+          <p style="color: #999; font-size: 12px;">
+            出典：PR Times<br>
+            送信日時：{timestamp}
+          </p>
+        </body>
+        </html>

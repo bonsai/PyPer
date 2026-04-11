@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# yao — WSL native entry point
+exec python3 "$HOME/yao/yao.py" "$@"
